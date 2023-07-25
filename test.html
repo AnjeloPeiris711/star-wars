@@ -1,0 +1,144 @@
+<html>
+	<head>
+		<style>
+			canvas{
+  				background:black;
+			}
+			body{
+  				margin:0;
+				overflow:hidden;
+			}
+			div{
+  				color:lightblue;
+  				position:absolute;
+  				font-size:2vw;
+  				font-family:Arial;
+  				margin-left:5vw;
+  				margin-top:1vw;
+			}
+			.right{
+  				left:50%;
+  				margin-left:0px;
+  				transform:translate(-50%,0);
+			}
+			a{
+  				color:lightblue;
+			}
+		</style>
+		<script>
+			let stars=[];
+			let speed=5;
+			let canvas;
+			const maxSpeed=10;
+			const minSpeed=0;
+			let isMouseDown=false;
+			function main(){
+				canvas=document.getElementById("myCanvas");
+				canvas.width=window.innerWidth;
+				canvas.height=window.innerHeight;
+				canvas.addEventListener("mousedown",onMouseDown);
+				canvas.addEventListener("mouseup",onMouseUp);
+				for(let i=0;i<100;i++){
+					let loc={
+						x:Math.random()*canvas.width,
+						y:Math.random()*canvas.height
+					}
+					// stars.push(new Star(loc));
+					stars.push(new Star(loc, { r: 0, g: 0, b: 255 })); // Blue star
+					stars.push(new Star(loc, { r: 0, g: 255, b: 0 })); // Green star
+					stars.push(new Star(loc, { r: 255, g: 0, b: 0 })); // Red star
+				}
+				let ctx=canvas.getContext("2d");
+				for(let i=0;i<100;i++){
+					stars[i].draw(ctx);
+				}
+				animate();
+			}
+			function onMouseDown(){
+				isMouseDown=true;
+			}
+			function onMouseUp(){
+				isMouseDown=false;
+			}
+			function animate(){
+				if(isMouseDown){
+					speed++;
+				}else{
+					speed--;
+				}
+				speed=Math.max(minSpeed,Math.min(speed,maxSpeed));
+				let ctx=canvas.getContext("2d");
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				// ctx.fillStyle="rgba(0,0,0,0.2)";
+				// ctx.rect(0,0,canvas.width,canvas.height);
+				// ctx.fill();
+				for(let i=0;i<stars.length;i++){
+					stars[i].update();
+				}
+				for(let i=0;i<stars.length;i++){
+					stars[i].draw(ctx);
+				}
+				window.requestAnimationFrame(animate);
+			}
+			class Star{
+				constructor(location,color){
+					this.location=location;
+					this.radius=2+Math.random()*2;
+					this.color = color;
+				
+				}
+				update(){
+				let center={
+					x:window.innerWidth/2,
+					y:window.innerHeight/2
+				}
+				let angle=Math.atan2(
+					this.location.y-center.y,
+					this.location.x-center.x
+				);
+				this.location.x+=speed*Math.cos(angle);
+				this.location.y+=speed*Math.sin(angle);
+				if(this.location.x>window.innerWidth ||
+				   this.location.x<0 ||
+				   this.location.y<0 ||
+				   this.location.y>window.innerHeight){
+						this.location.x=Math.random()*
+								    window.innerWidth;
+					this.location.y=Math.random()*
+								    window.innerHeight;
+
+					}
+					let disToCenter = Math.sqrt(
+						Math.pow(this.location.x-center.x,2)+
+						Math.pow(this.location.y-center.y,2)
+						);
+					this.radius = 1+3*disToCenter/window.innerWidth
+				}
+				draw(ctx){
+					ctx.beginPath();
+					ctx.moveTo(this.location.x,
+				           this.location.y);
+					let center={
+						x:window.innerWidth/2,
+						y:window.innerHeight/2
+					}
+					let weight=150-145*(speed/maxSpeed);
+					let pastLocation={
+						x:(weight*this.location.x+center.x)/(weight+1),
+						y:(weight*this.location.y+center.y)/(weight+1),
+					}
+					ctx.lineTo(pastLocation.x,
+				           pastLocation.y);
+					// ctx.arc(this.location.x,this.location.y,
+					// 	this.radius,0,Math.PI*2);
+					ctx.strokeStyle=`rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+					ctx.lineWidth=this.radius;
+					ctx.stroke();
+				}	
+			}			   
+		</script>
+	</head>
+	<body onload ="main()">
+		<canvas id ="myCanvas"></canvas>
+	</body>
+<html>
